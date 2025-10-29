@@ -98,11 +98,22 @@
   </style>
 </head>
 <body>
-  <!-- Hintergrundmusik -->
-  <audio autoplay loop hidden>
+
+  <!-- Hintergrundmusik (startet nach Klick) -->
+  <audio id="bgmusic" loop>
     <source src="Hot n Cold - Agartha Remix [_Gb7JtNukNE].mp3" type="audio/mpeg">
     Dein Browser unterstützt das Abspielen von Audio-Dateien nicht.
   </audio>
+
+  <script>
+    // Musik startet, sobald Nutzer einmal klickt oder tippt
+    document.addEventListener('click', () => {
+      const music = document.getElementById('bgmusic');
+      if (music.paused) {
+        music.play().catch(err => console.log('Autoplay blockiert:', err));
+      }
+    }, { once: true });
+  </script>
 
   <div id="app" class="container" role="main">
     <header>

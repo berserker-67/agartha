@@ -104,7 +104,7 @@ document.addEventListener('click',()=>{const m=document.getElementById('bgmusic'
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),livesEl=document.getElementById('lives');
 const restartBtn=document.getElementById('restart'),muteBtn=document.getElementById('mute');
-let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=performance.now(),best=+localStorage.getItem('vril_best')||0,lives=3;
+let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=performance.now(),best=+localStorage.getItem('vril_best')||0,lives=3,invincible=false,invTimer=0;
 bestEl.textContent=best; livesEl.textContent=lives;
 const gravity=0.9;
 
@@ -140,19 +140,27 @@ let obs=[],crys=[],tObs=0,tCry=0,boss=null,bossActive=false;
 function rand(a,b){return Math.random()*(b-a)+a;}
 function rects(a,b){return!(a.x+a.w<b.x||a.x>b.x+b.w||a.y+a.h<b.y||a.y>b.y+b.h);}
 function spawnObs(){obs.push({x:W+20,y:H-70,w:rand(20,50),h:rand(30,80),vx:-4-score/300});}
-function spawnCry(){crys.push({x:W+20,y:rand(H-200,H-80),w:16,h:16,vx:-4-score/400});}
-function spawnBoss(){boss={x:W/2-60,y:20,w:120,h:60,hp:3,timer:0,shots:[],dir:1,hitBlink:0};bossActive=true;}
-function reset(){score=0;obs=[];crys=[];player.y=H-80;player.vy=0;running=true;bossActive=false;boss=null;lives=3;scoreEl.textContent=score;livesEl.textContent=lives;}
+function spawnCry(){crys.push({x:W+20,y:rand(H-200,H-80),w:16,h:16,vx:-3-score/500});} // Projektile langsamer
+function spawnBoss(){boss={x:W/2-60,y:20,w:120,h:60,hp:3,timer:0,shots:[],dir:1,hitBlink:0,hitCooldown:0};bossActive=true;}
+function reset(){score=0;obs=[];crys=[];player.y=H-80;player.vy=0;running=true;bossActive=false;boss=null;lives=3;invincible=false;invTimer=0;scoreEl.textContent=score;livesEl.textContent=lives;}
 
 function update(dt){
   if(!running)return;
   player.update();
+  if(invincible){invTimer-=dt;if(invTimer<=0){invincible=false;}}
   tObs-=dt;tCry-=dt;
   if(tObs<=0){spawnObs();tObs=rand(800,1600);}
   if(tCry<=0){spawnCry();tCry=rand(1000,2200);}
   obs.forEach(o=>o.x+=o.vx*dt/16);crys.forEach(c=>c.x+=c.vx*dt/16);
   obs=obs.filter(o=>o.x+o.w>0);crys=crys.filter(c=>c.x+16>0);
-  obs.forEach(o=>{if(rects(player,o)){lives--;beep(220);if(lives<=0){running=false;beep(150);}livesEl.textContent=lives;}});
+  obs.forEach(o=>{
+    if(!invincible && rects(player,o)){
+      lives--;beep(220);
+      invincible=true;invTimer=1300;
+      if(lives<=0){running=false;beep(150);}
+      livesEl.textContent=lives;
+    }
+  });
   crys=crys.filter(c=>{if(rects(player,c)){score+=10;scoreEl.textContent=score;beep(660);return false;}return true;});
   score+=Math.floor(dt*0.01);scoreEl.textContent=score;
 
@@ -166,21 +174,22 @@ function update(dt){
       const dx = player.x+player.w/2 - (boss.x+boss.w/2);
       const dy = player.y+player.h/2 - (boss.y+boss.h);
       const dist = Math.hypot(dx,dy);
-      boss.shots.push({x:boss.x+boss.w/2,y:boss.y+boss.h,vx:dx/dist*4,vy:dy/dist*4,r:4});
+      boss.shots.push({x:boss.x+boss.w/2,y:boss.y+boss.h,vx:dx/dist*3,vy:dy/dist*3,r:4}); // langsamer
       boss.timer=0;
     }
     boss.shots.forEach(s=>{
       s.x+=s.vx; s.y+=s.vy;
-      if(rects(player,{x:s.x-s.r,y:s.y-s.r,w:s.r*2,h:s.r*2})){lives--;beep(150);if(lives<=0)running=false;livesEl.textContent=lives;}
+      if(!invincible && rects(player,{x:s.x-s.r,y:s.y-s.r,w:s.r*2,h:s.r*2})){lives--;beep(150);invincible=true;invTimer=1300;if(lives<=0)running=false;livesEl.textContent=lives;}
     });
     boss.shots = boss.shots.filter(s=>s.y<H && s.x>0 && s.x<W);
 
-    // Spieler kann Boss anspringen
-    if(rects(player,{x:boss.x-10,y:boss.y-10,w:boss.w+20,h:boss.h/2}) && player.vy>0){
-      boss.hp--;player.vy=-10;boss.hitBlink=5;beep(1000);
+    // Spieler kann Boss anspringen, Hit Cooldown
+    if(boss.hitCooldown<=0 && rects(player,{x:boss.x-10,y:boss.y-10,w:boss.w+20,h:boss.h/2}) && player.vy>0){
+      boss.hp--;player.vy=-10;boss.hitBlink=5;boss.hitCooldown=700;beep(1000);
       if(boss.hp<=0){bossActive=false;boss=null;alert('Archon X besiegt!');}
     }
     if(boss.hitBlink>0) boss.hitBlink--;
+    if(boss.hitCooldown>0) boss.hitCooldown-=dt;
   }
 }
 

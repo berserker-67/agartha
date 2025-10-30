@@ -50,7 +50,7 @@
   .corner-icon{position: fixed;right: 16px;bottom: 16px;width:90px;height:90px;border-radius:10px;overflow:hidden;box-shadow: 0 6px 18px rgba(0,0,0,0.5);background: rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;z-index:999}
   .corner-icon img{width:100%;height:100%;object-fit:contain;display:block}
   @media (max-width:600px){body{padding:18px}.corner-icon{width:70px;height:70px;right:12px;bottom:12px}.video-card iframe{height:180px}}
-  /* --- VRIL GAME --- */
+  /* VRIL GAME */
   #vril-section{margin-top:40px;background:var(--vril-bg);border:1px solid var(--vril-border);border-radius:12px;padding:20px}
   #game{display:block;width:100%;height:460px;background:linear-gradient(180deg,#041018,#071922 60%,#08111a);border-radius:12px;margin-top:10px}
   .hud{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:0.95rem}
@@ -102,66 +102,94 @@
 
 <script>
 (() => {
-  const canvas=document.getElementById('game');const ctx=canvas.getContext('2d');const scoreEl=document.getElementById('score');const bestEl=document.getElementById('best');const restartBtn=document.getElementById('restart');const muteBtn=document.getElementById('mute');
-  let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=performance.now(),best=+localStorage.getItem('vril_best')||0;
-  bestEl.textContent=best;
-  const gravity=0.9;
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best');
+const restartBtn=document.getElementById('restart'),muteBtn=document.getElementById('mute');
+let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=performance.now(),best=+localStorage.getItem('vril_best')||0;
+bestEl.textContent=best;
+const gravity=0.9;
 
-  const player={x:120,y:H-100,w:36,h:44,vy:0,onGround:true,canDouble:true,
-    jump(){if(this.onGround){this.vy=-14;this.onGround=false;beep(880);}else if(this.canDouble){this.vy=-12;this.canDouble=false;beep(1100);}},
-    update(){this.vy+=gravity;this.y+=this.vy;if(this.y+this.h>H-40){this.y=H-40-this.h;this.vy=0;this.onGround=true;this.canDouble=true;}},
-    draw(){ctx.fillStyle='#55cfff';ctx.fillRect(this.x,this.y,this.w,this.h);ctx.fillStyle='#ffeeaa';ctx.fillRect(this.x+6,this.y+4,24,36);}};
-
-  function beep(f){if(muted)return;const a=new(AudioContext);const o=a.createOscillator();const g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.value=0.06;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.08);setTimeout(()=>{o.stop();a.close()},120);}
-
-  let obs=[],crys=[],tObs=0,tCry=0,boss=null,bossActive=false;
-  function rand(a,b){return Math.random()*(b-a)+a;}
-  function rects(a,b){return!(a.x+a.w<b.x||a.x>b.x+b.w||a.y+a.h<b.y||a.y>b.y+b.h);}
-  function spawnObs(){obs.push({x:W+20,y:H-70,w:rand(20,50),h:rand(30,80),vx:-4-score/300});}
-  function spawnCry(){crys.push({x:W+20,y:rand(H-200,H-80),w:16,h:16,vx:-4-score/400});}
-  function spawnBoss(){boss={x:W/2-60,y:20,w:120,h:60,timer:0,shots:[]};bossActive=true;}
-  function reset(){score=0;obs=[];crys=[];player.y=H-80;player.vy=0;running=true;bossActive=false;boss=null;}
-
-  function update(dt){
-    if(!running)return;
-    player.update();
-    tObs-=dt;tCry-=dt;
-    if(tObs<=0){spawnObs();tObs=rand(800,1600);}
-    if(tCry<=0){spawnCry();tCry=rand(1000,2200);}
-    obs.forEach(o=>o.x+=o.vx*dt/16);crys.forEach(c=>c.x+=c.vx*dt/16);
-    obs=obs.filter(o=>o.x+o.w>0);crys=crys.filter(c=>c.x+16>0);
-    obs.forEach(o=>{if(rects(player,o)){running=false;beep(220);if(score>best){best=score;localStorage.setItem('vril_best',best);bestEl.textContent=best;}}});
-    crys=crys.filter(c=>{if(rects(player,c)){score+=10;scoreEl.textContent=score;beep(660);return false;}return true;});
-    score+=Math.floor(dt*0.01);scoreEl.textContent=score;
-
-    if(score>=271 && !bossActive){spawnBoss();}
-
-    if(bossActive && boss){
-      boss.timer+=dt;
-      if(boss.timer>120){boss.shots.push({x:boss.x+boss.w/2-6,y:boss.y+boss.h,vy:5});boss.timer=0;}
-      boss.shots.forEach(s=>{s.y+=s.vy; if(rects(player,s)){running=false;beep(150);}});
-      boss.shots=boss.shots.filter(s=>s.y<H);
-    }
+// Spieler: Strichmännchen Ashtar Sheran
+const player={
+  x:120,y:H-100,w:36,h:44,vy:0,onGround:true,canDouble:true,
+  jump(){if(this.onGround){this.vy=-14;this.onGround=false;beep(880);}else if(this.canDouble){this.vy=-12;this.canDouble=false;beep(1100);}},
+  update(){this.vy+=gravity;this.y+=this.vy;if(this.y+this.h>H-40){this.y=H-40-this.h;this.vy=0;this.onGround=true;this.canDouble=true;}},
+  draw(){
+    const cx=this.x+this.w/2,cy=this.y+10;
+    ctx.strokeStyle='white';ctx.lineWidth=2;
+    // Körper
+    ctx.beginPath();
+    ctx.moveTo(cx,cy+10);ctx.lineTo(cx,cy+30); // Rumpf
+    ctx.moveTo(cx,cy+30);ctx.lineTo(cx-8,cy+38); // linkes Bein
+    ctx.moveTo(cx,cy+30);ctx.lineTo(cx+8,cy+38); // rechtes Bein
+    ctx.moveTo(cx,cy+15);ctx.lineTo(cx-8,cy+25); // linke Hand
+    ctx.moveTo(cx,cy+15);ctx.lineTo(cx+8,cy+25); // rechte Hand
+    ctx.stroke();
+    // Kopf
+    ctx.fillStyle='white';ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.fill();
+    // Augen
+    ctx.fillStyle='blue';ctx.beginPath();ctx.arc(cx-3,cy-1,1.5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+3,cy-1,1.5,0,Math.PI*2);ctx.fill();
+    // Haare
+    ctx.strokeStyle='gold';ctx.beginPath();
+    ctx.moveTo(cx-5,cy-6);ctx.lineTo(cx+5,cy-6);ctx.stroke();
   }
+};
 
-  function draw(){
-    ctx.clearRect(0,0,W,H);ctx.fillStyle='#041018';ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#071a1a';ctx.fillRect(0,H-40,W,40);
-    crys.forEach(c=>{ctx.fillStyle='#ff4444';ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+16,c.y+8);ctx.lineTo(c.x,c.y+16);ctx.closePath();ctx.fill();});
-    obs.forEach(o=>{ctx.fillStyle='#666';ctx.fillRect(o.x,o.y,o.w,o.h);});
-    player.draw();
-    if(bossActive && boss){
-      ctx.fillStyle='rgba(200,0,255,0.7)';ctx.fillRect(boss.x,boss.y,boss.w,boss.h);
-      boss.shots.forEach(s=>{ctx.fillStyle='#ff00ff';ctx.fillRect(s.x,s.y,12,12);});
-    }
-    if(!running){ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText('Game Over',W/2,H/2);}
+function beep(f){if(muted)return;const a=new(AudioContext);const o=a.createOscillator();const g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.value=0.06;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.08);setTimeout(()=>{o.stop();a.close()},120);}
+
+let obs=[],crys=[],tObs=0,tCry=0,boss=null,bossActive=false;
+function rand(a,b){return Math.random()*(b-a)+a;}
+function rects(a,b){return!(a.x+a.w<b.x||a.x>b.x+b.w||a.y+a.h<b.y||a.y>b.y+b.h);}
+function spawnObs(){obs.push({x:W+20,y:H-70,w:rand(20,50),h:rand(30,80),vx:-4-score/300});}
+function spawnCry(){crys.push({x:W+20,y:rand(H-200,H-80),w:16,h:16,vx:-4-score/400});}
+function spawnBoss(){boss={x:W/2-60,y:20,w:120,h:60,hp:10,timer:0,shots:[]};bossActive=true;}
+function reset(){score=0;obs=[];crys=[];player.y=H-80;player.vy=0;running=true;bossActive=false;boss=null;scoreEl.textContent=score;}
+
+function update(dt){
+  if(!running)return;
+  player.update();
+  tObs-=dt;tCry-=dt;
+  if(tObs<=0){spawnObs();tObs=rand(800,1600);}
+  if(tCry<=0){spawnCry();tCry=rand(1000,2200);}
+  obs.forEach(o=>o.x+=o.vx*dt/16);crys.forEach(c=>c.x+=c.vx*dt/16);
+  obs=obs.filter(o=>o.x+o.w>0);crys=crys.filter(c=>c.x+16>0);
+  obs.forEach(o=>{if(rects(player,o)){running=false;beep(220);if(score>best){best=score;localStorage.setItem('vril_best',best);bestEl.textContent=best;}}});
+  crys=crys.filter(c=>{if(rects(player,c)){score+=10;scoreEl.textContent=score;beep(660);return false;}return true;});
+  score+=Math.floor(dt*0.01);scoreEl.textContent=score;
+
+  if(score>=271 && !bossActive){spawnBoss();}
+
+  // Boss-Logik
+  if(bossActive && boss){
+    boss.timer+=dt;
+    if(boss.timer>120){boss.shots.push({x:boss.x+boss.w/2-6,y:boss.y+boss.h,vy:5});boss.timer=0;}
+    boss.shots.forEach(s=>{s.y+=s.vy; if(rects(player,s)){running=false;beep(150);}});
+    boss.shots=boss.shots.filter(s=>s.y<H);
+
+    // Spieler kann Boss treffen (Sprungkontakt)
+    if(rects(player,boss) && player.vy>0){boss.hp--;player.vy=-10;beep(1000);if(boss.hp<=0){bossActive=false;boss=null;alert('Archon X besiegt!');}}
   }
+}
 
-  function loop(now){const dt=now-last;update(dt);draw();last=now;requestAnimationFrame(loop);}
-  requestAnimationFrame(loop);
+function draw(){
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#041018';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#071a1a';ctx.fillRect(0,H-40,W,40);
+  crys.forEach(c=>{ctx.fillStyle='#44f';ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+16,c.y+8);ctx.lineTo(c.x,c.y+16);ctx.closePath();ctx.fill();});
+  obs.forEach(o=>{ctx.fillStyle='#666';ctx.fillRect(o.x,o.y,o.w,o.h);});
+  player.draw();
+  if(bossActive && boss){
+    ctx.fillStyle='rgba(200,0,255,0.7)';ctx.fillRect(boss.x,boss.y,boss.w,boss.h);
+    boss.shots.forEach(s=>{ctx.fillStyle='#ff00ff';ctx.fillRect(s.x,s.y,12,12);});
+  }
+  if(!running){ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText('Game Over',W/2,H/2);}
+}
 
-  restartBtn.onclick=()=>reset();muteBtn.onclick=()=>muted=!muted;
-  document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();player.jump();}});canvas.addEventListener('pointerdown',()=>player.jump());
+function loop(now){const dt=now-last;update(dt);draw();last=now;requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+
+restartBtn.onclick=()=>reset();muteBtn.onclick=()=>muted=!muted;
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();player.jump();}});canvas.addEventListener('pointerdown',()=>player.jump());
 })();
 </script>
 </body>

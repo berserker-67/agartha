@@ -90,7 +90,7 @@ document.addEventListener('click',()=>{const m=document.getElementById('bgmusic'
 <div class="hud">
   <div>Score: <span id="score">0</span></div>
   <div>Best: <span id="best">0</span></div>
-  <div>Leben: <span id="lives">1.000.000</span></div>
+  <div>Leben: <span id="lives">3</span></div>
   <button id="restart" class="btn">Neustart</button>
   <button id="mute" class="btn">Ton an/aus</button>
 </div>
@@ -104,7 +104,7 @@ document.addEventListener('click',()=>{const m=document.getElementById('bgmusic'
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),livesEl=document.getElementById('lives');
 const restartBtn=document.getElementById('restart'),muteBtn=document.getElementById('mute');
-let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=performance.now(),best=+localStorage.getItem('vril_best')||0,lives=1.000.000,invincible=false,invTimer=0;
+let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=performance.now(),best=+localStorage.getItem('vril_best')||0,lives=3,invincible=false,invTimer=0;
 bestEl.textContent=best; livesEl.textContent=lives;
 const gravity=0.9;
 let speedMultiplier=1;

@@ -109,7 +109,6 @@ bestEl.textContent=best; livesEl.textContent=lives;
 const gravity=0.9;
 let speedMultiplier=1;
 
-// Hintergrundbild
 const bgImage = new Image();
 bgImage.src = 'assets/Hintergrundbild_1.jpg';
 
@@ -166,8 +165,11 @@ function update(dt){
   
   score+=Math.floor(dt*0.01);scoreEl.textContent=score;
 
-  // Ab 271 Punkte: progressive Geschwindigkeit
-  if(score>=271) speedMultiplier = 1 + (score-270)/300;
+  // Gestaffelte Geschwindigkeit nach Punkten
+  if(score>=271 && score<300) speedMultiplier=1.2;
+  else if(score>=300 && score<400) speedMultiplier=1.5;
+  else if(score>=400 && score<500) speedMultiplier=2.0;
+  else if(score>=500 && score<600) speedMultiplier=2.8;
 
   // Siegbedingung
   if(score>=600 && running){running=false;alert("Glückwunsch! Du hast Agartha gemeistert!");}

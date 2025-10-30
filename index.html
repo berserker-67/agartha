@@ -6,7 +6,7 @@
 <title>Reise nach Agartha</title>
 <style>
 :root{
-  --bg-image: url('assets/Hintergrundbild_1.jpg');
+  --bg-image: url('assets/argatha.jpg');
   --accent: rgba(255,255,255,0.85);
   --glass: rgba(255,255,255,0.06);
   --vril-bg: rgba(0,0,0,0.45);
@@ -51,7 +51,7 @@ p.lead{color:rgba(255,255,255,0.85);margin-top:6px}
 .corner-icon img{width:100%;height:100%;object-fit:contain;display:block}
 @media (max-width:600px){body{padding:18px}.corner-icon{width:70px;height:70px;right:12px;bottom:12px}.video-card iframe{height:180px}}
 #vril-section{margin-top:40px;background:var(--vril-bg);border:1px solid var(--vril-border);border-radius:12px;padding:20px}
-#game{display:block;width:100%;height:460px;background: url('assets/Hintergrundbild_1.jpg') center/cover no-repeat; border-radius:12px; margin-top:10px}
+#game{display:block;width:100%;height:460px;border-radius:12px;margin-top:10px;background:#000}
 .hud{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:0.95rem}
 .btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:#fff;padding:4px 8px;cursor:pointer}
 </style>
@@ -107,6 +107,10 @@ let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=perform
 bestEl.textContent=best;
 const gravity=0.9;
 
+// Hintergrundbild
+const bgImage = new Image();
+bgImage.src = 'assets/Hintergrundbild_1.jpg';
+
 const player={
 x:120,y:H-100,w:36,h:44,vy:0,onGround:true,canDouble:true,
 jump(){if(this.onGround){this.vy=-14;this.onGround=false;beep(880);}else if(this.canDouble){this.vy=-12;this.canDouble=false;beep(1100);}},
@@ -136,7 +140,7 @@ function rand(a,b){return Math.random()*(b-a)+a;}
 function rects(a,b){return!(a.x+a.w<b.x||a.x>b.x+b.w||a.y+a.h<b.y||a.y>b.y+b.h);}
 function spawnObs(){obs.push({x:W+20,y:H-70,w:rand(20,50),h:rand(30,80),vx:-4-score/300});}
 function spawnCry(){crys.push({x:W+20,y:rand(H-200,H-80),w:16,h:16,vx:-4-score/400});}
-function spawnBoss(){boss={x:W/2-60,y:20,w:120,h:60,hp:10,timer:0,shots:[],dir:1};bossActive=true;}
+function spawnBoss(){boss={x:W/2-60,y:20,w:120,h:60,hp:5,timer:0,shots:[],dir:1};bossActive=true;}
 function reset(){score=0;obs=[];crys=[];player.y=H-80;player.vy=0;running=true;bossActive=false;boss=null;scoreEl.textContent=score;}
 
 function update(dt){
@@ -154,14 +158,16 @@ function update(dt){
   if(score>=271 && !bossActive){spawnBoss();}
 
   if(bossActive && boss){
-    boss.x += boss.dir*2; 
+    // Langsamere Bewegung
+    boss.x += boss.dir*1.5; 
     if(boss.x<0 || boss.x+boss.w>W) boss.dir*=-1;
+    // Timer für Schuss
     boss.timer+=dt;
-    if(boss.timer>100){
+    if(boss.timer>140){
       const dx = player.x+player.w/2 - (boss.x+boss.w/2);
       const dy = player.y+player.h/2 - (boss.y+boss.h);
       const dist = Math.hypot(dx,dy);
-      boss.shots.push({x:boss.x+boss.w/2,y:boss.y+boss.h,vx:dx/dist*6,vy:dy/dist*6,r:4});
+      boss.shots.push({x:boss.x+boss.w/2,y:boss.y+boss.h,vx:dx/dist*4,vy:dy/dist*4,r:4});
       boss.timer=0;
     }
     boss.shots.forEach(s=>{
@@ -169,19 +175,20 @@ function update(dt){
       if(rects(player,{x:s.x-s.r,y:s.y-s.r,w:s.r*2,h:s.r*2})){running=false;beep(150);}
     });
     boss.shots = boss.shots.filter(s=>s.y<H && s.x>0 && s.x<W);
+
     if(rects(player,boss) && player.vy>0){boss.hp--;player.vy=-10;beep(1000);if(boss.hp<=0){bossActive=false;boss=null;alert('Archon X besiegt!');}}
   }
 }
 
 function draw(){
-  ctx.clearRect(0,0,W,H);ctx.fillStyle='#041018';ctx.fillRect(0,0,W,H);
+  if(bgImage.complete) ctx.drawImage(bgImage,0,0,W,H);
+  else ctx.fillStyle='#041018',ctx.fillRect(0,0,W,H);
   ctx.fillStyle='#071a1a';ctx.fillRect(0,H-40,W,40);
   crys.forEach(c=>{ctx.fillStyle='#44f';ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+16,c.y+8);ctx.lineTo(c.x,c.y+16);ctx.closePath();ctx.fill();});
   obs.forEach(o=>{ctx.fillStyle='#666';ctx.fillRect(o.x,o.y,o.w,o.h);});
   player.draw();
   if(bossActive && boss){
-    ctx.fillStyle='rgba(255,0,0,0.8)';
-    ctx.fillRect(boss.x,boss.y,boss.w,boss.h);
+    ctx.fillStyle='rgba(255,0,0,0.8)';ctx.fillRect(boss.x,boss.y,boss.w,boss.h);
     boss.shots.forEach(s=>{ctx.strokeStyle='#ffff00';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x-s.vx*0.5,s.y-s.vy*0.5);ctx.stroke();});
   }
   if(!running){ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText('Game Over',W/2,H/2);}
@@ -196,3 +203,4 @@ document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();
 </script>
 </body>
 </html>
+

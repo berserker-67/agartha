@@ -5,56 +5,55 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Reise nach Agartha</title>
 <style>
-  :root{
-    --bg-image: url('assets/argatha.jpg');
-    --accent: rgba(255,255,255,0.85);
-    --glass: rgba(255,255,255,0.06);
-    --vril-bg: rgba(0,0,0,0.45);
-    --vril-border: rgba(255,255,255,0.05);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body,#app{height:100%}
-  body{
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    color:#fff;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0.25), rgba(0,0,0,0.6));
-    background-image: var(--bg-image);
-    background-size: cover;
-    background-position: center;
-    padding: 40px;
-  }
-  .container{
-    max-width:1100px;
-    margin: 0 auto;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-    border-radius: 14px;
-    padding: 28px;
-    backdrop-filter: blur(6px) saturate(120%);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-  }
-  header{display:flex;align-items:center;gap:16px}
-  .logo{
-    width:64px;height:64px;border-radius:10px;background:var(--glass);
-    display:flex;align-items:center;justify-content:center;font-weight:700;
-    color:var(--accent);
-  }
-  h1{font-size:1.6rem}
-  p.lead{color:rgba(255,255,255,0.85);margin-top:6px}
-  .gallery{display:grid;grid-template-columns: repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:18px}
-  .photo{background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
-  .photo img{width:100%;height:100%;object-fit:cover;display:block}
-  .videos{display:grid;grid-template-columns: repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:20px}
-  .video-card{background:rgba(0,0,0,0.35);border-radius:10px;overflow:hidden;padding:8px}
-  .video-card iframe{width:100%;height:220px;border:0;display:block}
-  .about{margin-top:18px;color:rgba(255,255,255,0.9);font-size:0.95rem;line-height:1.45}
-  .corner-icon{position: fixed;right: 16px;bottom: 16px;width:90px;height:90px;border-radius:10px;overflow:hidden;box-shadow: 0 6px 18px rgba(0,0,0,0.5);background: rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;z-index:999}
-  .corner-icon img{width:100%;height:100%;object-fit:contain;display:block}
-  @media (max-width:600px){body{padding:18px}.corner-icon{width:70px;height:70px;right:12px;bottom:12px}.video-card iframe{height:180px}}
-  /* VRIL GAME */
-  #vril-section{margin-top:40px;background:var(--vril-bg);border:1px solid var(--vril-border);border-radius:12px;padding:20px}
-  #game{display:block;width:100%;height:460px;background:linear-gradient(180deg,#041018,#071922 60%,#08111a);border-radius:12px;margin-top:10px}
-  .hud{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:0.95rem}
-  .btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:#fff;padding:4px 8px;cursor:pointer}
+:root{
+  --bg-image: url('assets/Hintergrundbild_1.jpg');
+  --accent: rgba(255,255,255,0.85);
+  --glass: rgba(255,255,255,0.06);
+  --vril-bg: rgba(0,0,0,0.45);
+  --vril-border: rgba(255,255,255,0.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#app{height:100%}
+body{
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color:#fff;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.25), rgba(0,0,0,0.6));
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  padding: 40px;
+}
+.container{
+  max-width:1100px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border-radius: 14px;
+  padding: 28px;
+  backdrop-filter: blur(6px) saturate(120%);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+header{display:flex;align-items:center;gap:16px}
+.logo{
+  width:64px;height:64px;border-radius:10px;background:var(--glass);
+  display:flex;align-items:center;justify-content:center;font-weight:700;
+  color:var(--accent);
+}
+h1{font-size:1.6rem}
+p.lead{color:rgba(255,255,255,0.85);margin-top:6px}
+.gallery{display:grid;grid-template-columns: repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:18px}
+.photo{background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.videos{display:grid;grid-template-columns: repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:20px}
+.video-card{background:rgba(0,0,0,0.35);border-radius:10px;overflow:hidden;padding:8px}
+.video-card iframe{width:100%;height:220px;border:0;display:block}
+.about{margin-top:18px;color:rgba(255,255,255,0.9);font-size:0.95rem;line-height:1.45}
+.corner-icon{position: fixed;right: 16px;bottom: 16px;width:90px;height:90px;border-radius:10px;overflow:hidden;box-shadow: 0 6px 18px rgba(0,0,0,0.5);background: rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;z-index:999}
+.corner-icon img{width:100%;height:100%;object-fit:contain;display:block}
+@media (max-width:600px){body{padding:18px}.corner-icon{width:70px;height:70px;right:12px;bottom:12px}.video-card iframe{height:180px}}
+#vril-section{margin-top:40px;background:var(--vril-bg);border:1px solid var(--vril-border);border-radius:12px;padding:20px}
+#game{display:block;width:100%;height:460px;background: url('assets/Hintergrundbild_1.jpg') center/cover no-repeat; border-radius:12px; margin-top:10px}
+.hud{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:0.95rem}
+.btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:#fff;padding:4px 8px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -62,7 +61,7 @@
   <source src="Hot n Cold - Agartha Remix [_Gb7JtNukNE].mp3" type="audio/mpeg">
 </audio>
 <script>
-  document.addEventListener('click',()=>{const m=document.getElementById('bgmusic');if(m.paused)m.play().catch(()=>{});},{once:true});
+document.addEventListener('click',()=>{const m=document.getElementById('bgmusic');if(m.paused)m.play().catch(()=>{});},{once:true});
 </script>
 
 <div id="app" class="container" role="main">
@@ -84,17 +83,16 @@
   <div class="video-card"><iframe src="https://www.youtube.com/embed/N2aYVtbcZMU" title="Video 2"></iframe></div>
 </section>
 
-<!-- VRIL-SPIEL -->
 <section id="vril-section">
-  <h2>🎮 Vril-Energie-Sprung</h2>
-  <p>Springe durch Agartha, sammle Kristalle und besiege Archon X!</p>
-  <canvas id="game" width="960" height="460"></canvas>
-  <div class="hud">
-    <div>Score: <span id="score">0</span></div>
-    <div>Best: <span id="best">0</span></div>
-    <button id="restart" class="btn">Neustart</button>
-    <button id="mute" class="btn">Ton an/aus</button>
-  </div>
+<h2>🎮 Vril-Energie-Sprung</h2>
+<p>Springe durch Agartha, sammle Kristalle und besiege Archon X!</p>
+<canvas id="game" width="960" height="460"></canvas>
+<div class="hud">
+  <div>Score: <span id="score">0</span></div>
+  <div>Best: <span id="best">0</span></div>
+  <button id="restart" class="btn">Neustart</button>
+  <button id="mute" class="btn">Ton an/aus</button>
+</div>
 </section>
 </div>
 
@@ -109,31 +107,26 @@ let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=perform
 bestEl.textContent=best;
 const gravity=0.9;
 
-// Spieler: Strichmännchen Ashtar Sheran
 const player={
-  x:120,y:H-100,w:36,h:44,vy:0,onGround:true,canDouble:true,
-  jump(){if(this.onGround){this.vy=-14;this.onGround=false;beep(880);}else if(this.canDouble){this.vy=-12;this.canDouble=false;beep(1100);}},
-  update(){this.vy+=gravity;this.y+=this.vy;if(this.y+this.h>H-40){this.y=H-40-this.h;this.vy=0;this.onGround=true;this.canDouble=true;}},
-  draw(){
-    const cx=this.x+this.w/2,cy=this.y+10;
-    ctx.strokeStyle='white';ctx.lineWidth=2;
-    // Körper
-    ctx.beginPath();
-    ctx.moveTo(cx,cy+10);ctx.lineTo(cx,cy+30); // Rumpf
-    ctx.moveTo(cx,cy+30);ctx.lineTo(cx-8,cy+38); // linkes Bein
-    ctx.moveTo(cx,cy+30);ctx.lineTo(cx+8,cy+38); // rechtes Bein
-    ctx.moveTo(cx,cy+15);ctx.lineTo(cx-8,cy+25); // linke Hand
-    ctx.moveTo(cx,cy+15);ctx.lineTo(cx+8,cy+25); // rechte Hand
-    ctx.stroke();
-    // Kopf
-    ctx.fillStyle='white';ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.fill();
-    // Augen
-    ctx.fillStyle='blue';ctx.beginPath();ctx.arc(cx-3,cy-1,1.5,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(cx+3,cy-1,1.5,0,Math.PI*2);ctx.fill();
-    // Haare
-    ctx.strokeStyle='gold';ctx.beginPath();
-    ctx.moveTo(cx-5,cy-6);ctx.lineTo(cx+5,cy-6);ctx.stroke();
-  }
+x:120,y:H-100,w:36,h:44,vy:0,onGround:true,canDouble:true,
+jump(){if(this.onGround){this.vy=-14;this.onGround=false;beep(880);}else if(this.canDouble){this.vy=-12;this.canDouble=false;beep(1100);}},
+update(){this.vy+=gravity;this.y+=this.vy;if(this.y+this.h>H-40){this.y=H-40-this.h;this.vy=0;this.onGround=true;this.canDouble=true;}},
+draw(){
+  const cx=this.x+this.w/2,cy=this.y+10;
+  ctx.strokeStyle='white';ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(cx,cy+10);ctx.lineTo(cx,cy+30);
+  ctx.moveTo(cx,cy+30);ctx.lineTo(cx-8,cy+38);
+  ctx.moveTo(cx,cy+30);ctx.lineTo(cx+8,cy+38);
+  ctx.moveTo(cx,cy+15);ctx.lineTo(cx-8,cy+25);
+  ctx.moveTo(cx,cy+15);ctx.lineTo(cx+8,cy+25);
+  ctx.stroke();
+  ctx.fillStyle='white';ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='blue';ctx.beginPath();ctx.arc(cx-3,cy-1,1.5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(cx+3,cy-1,1.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='gold';ctx.beginPath();
+  ctx.moveTo(cx-5,cy-6);ctx.lineTo(cx+5,cy-6);ctx.stroke();
+}
 };
 
 function beep(f){if(muted)return;const a=new(AudioContext);const o=a.createOscillator();const g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.value=0.06;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.08);setTimeout(()=>{o.stop();a.close()},120);}
@@ -143,7 +136,7 @@ function rand(a,b){return Math.random()*(b-a)+a;}
 function rects(a,b){return!(a.x+a.w<b.x||a.x>b.x+b.w||a.y+a.h<b.y||a.y>b.y+b.h);}
 function spawnObs(){obs.push({x:W+20,y:H-70,w:rand(20,50),h:rand(30,80),vx:-4-score/300});}
 function spawnCry(){crys.push({x:W+20,y:rand(H-200,H-80),w:16,h:16,vx:-4-score/400});}
-function spawnBoss(){boss={x:W/2-60,y:20,w:120,h:60,hp:10,timer:0,shots:[]};bossActive=true;}
+function spawnBoss(){boss={x:W/2-60,y:20,w:120,h:60,hp:10,timer:0,shots:[],dir:1};bossActive=true;}
 function reset(){score=0;obs=[];crys=[];player.y=H-80;player.vy=0;running=true;bossActive=false;boss=null;scoreEl.textContent=score;}
 
 function update(dt){
@@ -160,14 +153,22 @@ function update(dt){
 
   if(score>=271 && !bossActive){spawnBoss();}
 
-  // Boss-Logik
   if(bossActive && boss){
+    boss.x += boss.dir*2; 
+    if(boss.x<0 || boss.x+boss.w>W) boss.dir*=-1;
     boss.timer+=dt;
-    if(boss.timer>120){boss.shots.push({x:boss.x+boss.w/2-6,y:boss.y+boss.h,vy:5});boss.timer=0;}
-    boss.shots.forEach(s=>{s.y+=s.vy; if(rects(player,s)){running=false;beep(150);}});
-    boss.shots=boss.shots.filter(s=>s.y<H);
-
-    // Spieler kann Boss treffen (Sprungkontakt)
+    if(boss.timer>100){
+      const dx = player.x+player.w/2 - (boss.x+boss.w/2);
+      const dy = player.y+player.h/2 - (boss.y+boss.h);
+      const dist = Math.hypot(dx,dy);
+      boss.shots.push({x:boss.x+boss.w/2,y:boss.y+boss.h,vx:dx/dist*6,vy:dy/dist*6,r:4});
+      boss.timer=0;
+    }
+    boss.shots.forEach(s=>{
+      s.x+=s.vx; s.y+=s.vy;
+      if(rects(player,{x:s.x-s.r,y:s.y-s.r,w:s.r*2,h:s.r*2})){running=false;beep(150);}
+    });
+    boss.shots = boss.shots.filter(s=>s.y<H && s.x>0 && s.x<W);
     if(rects(player,boss) && player.vy>0){boss.hp--;player.vy=-10;beep(1000);if(boss.hp<=0){bossActive=false;boss=null;alert('Archon X besiegt!');}}
   }
 }
@@ -179,8 +180,9 @@ function draw(){
   obs.forEach(o=>{ctx.fillStyle='#666';ctx.fillRect(o.x,o.y,o.w,o.h);});
   player.draw();
   if(bossActive && boss){
-    ctx.fillStyle='rgba(200,0,255,0.7)';ctx.fillRect(boss.x,boss.y,boss.w,boss.h);
-    boss.shots.forEach(s=>{ctx.fillStyle='#ff00ff';ctx.fillRect(s.x,s.y,12,12);});
+    ctx.fillStyle='rgba(255,0,0,0.8)';
+    ctx.fillRect(boss.x,boss.y,boss.w,boss.h);
+    boss.shots.forEach(s=>{ctx.strokeStyle='#ffff00';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x-s.vx*0.5,s.y-s.vy*0.5);ctx.stroke();});
   }
   if(!running){ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText('Game Over',W/2,H/2);}
 }

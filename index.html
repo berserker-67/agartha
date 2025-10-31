@@ -9,8 +9,6 @@
   --bg-image: url('assets/argatha.jpg');
   --accent: rgba(255,255,255,0.85);
   --glass: rgba(255,255,255,0.06);
-  --vril-bg: rgba(0,0,0,0.45);
-  --vril-border: rgba(255,255,255,0.05);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#app{height:100%}
@@ -98,76 +96,37 @@ document.addEventListener('click',()=>{const m=document.getElementById('bgmusic'
 </div>
 
 <a href="#" class="corner-icon"><img src="assets/berserker.png" alt="Eck-Icon"></a>
+
 <script>
 (() => {
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),livesEl=document.getElementById('lives');
 const restartBtn=document.getElementById('restart'),muteBtn=document.getElementById('mute');
 let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=performance.now(),
-    best=+localStorage.getItem('vril_best')||0,
-    lives=3,invincible=false,invTimer=0;
+    best=+localStorage.getItem('vril_best')||0,lives=3,invincible=false,invTimer=0;
 
 bestEl.textContent=best; 
 livesEl.textContent=lives;
 
 const gravity=0.9;
 let speedMultiplier=1;
-const bgImage = new Image();
-bgImage.src = 'assets/Hintergrundbild_1.jpg';
 
-const monsterImg = new Image();
-monsterImg.src = 'assets/monster.png'; // <- Monster-Energy-Drink-Icon
+const bgImage = new Image(); bgImage.src = 'assets/Hintergrundbild_1.jpg';
+const monsterImg = new Image(); monsterImg.src = 'assets/monster.png';
 
 const player={
 x:120,y:H-100,w:36,h:44,vy:0,onGround:true,canDouble:true,
-jump(){
-  if(this.onGround){this.vy=-14;this.onGround=false;beep(880);}
-  else if(this.canDouble){this.vy=-12;this.canDouble=false;beep(1100);}
-},
-update(){
-  this.vy+=gravity;
-  this.y+=this.vy;
-  if(this.y+this.h>H-40){
-    this.y=H-40-this.h;
-    this.vy=0;this.onGround=true;this.canDouble=true;
-  }
-},
-draw(){
-  const cx=this.x+this.w/2,cy=this.y+10;
-  ctx.strokeStyle='white';ctx.lineWidth=2;
-  ctx.beginPath();
-  ctx.moveTo(cx,cy+10);ctx.lineTo(cx,cy+30);
-  ctx.moveTo(cx,cy+30);ctx.lineTo(cx-8,cy+38);
-  ctx.moveTo(cx,cy+30);ctx.lineTo(cx+8,cy+38);
-  ctx.moveTo(cx,cy+15);ctx.lineTo(cx-8,cy+25);
-  ctx.moveTo(cx,cy+15);ctx.lineTo(cx+8,cy+25);
-  ctx.stroke();
-  ctx.fillStyle='white';ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='blue';ctx.beginPath();ctx.arc(cx-3,cy-1,1.5,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(cx+3,cy-1,1.5,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='gold';ctx.beginPath();ctx.moveTo(cx-5,cy-6);ctx.lineTo(cx+5,cy-6);ctx.stroke();
-}
+jump(){if(this.onGround){this.vy=-14;this.onGround=false;beep(880);}else if(this.canDouble){this.vy=-12;this.canDouble=false;beep(1100);}},
+update(){this.vy+=gravity; this.y+=this.vy; if(this.y+this.h>H-40){this.y=H-40-this.h; this.vy=0; this.onGround=true; this.canDouble=true;}},
+draw(){const cx=this.x+this.w/2,cy=this.y+10;ctx.strokeStyle='white';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy+10);ctx.lineTo(cx,cy+30);ctx.moveTo(cx,cy+30);ctx.lineTo(cx-8,cy+38);ctx.moveTo(cx,cy+30);ctx.lineTo(cx+8,cy+38);ctx.moveTo(cx,cy+15);ctx.lineTo(cx-8,cy+25);ctx.moveTo(cx,cy+15);ctx.lineTo(cx+8,cy+25);ctx.stroke();ctx.fillStyle='white';ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='blue';ctx.beginPath();ctx.arc(cx-3,cy-1,1.5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+3,cy-1,1.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='gold';ctx.beginPath();ctx.moveTo(cx-5,cy-6);ctx.lineTo(cx+5,cy-6);ctx.stroke();}
 };
 
-function beep(f){if(muted)return;const a=new(AudioContext);const o=a.createOscillator();const g=a.createGain();
-o.type='sine';o.frequency.value=f;g.gain.value=0.06;o.connect(g);g.connect(a.destination);
-o.start();g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.08);
-setTimeout(()=>{o.stop();a.close()},120);}
+function beep(f){if(muted)return;const a=new(AudioContext);const o=a.createOscillator();const g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.value=0.06;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.08);setTimeout(()=>{o.stop();a.close()},120);}
 
 let obs=[],crys=[],hearts=[],checkpoints=[],tObs=0,tCry=0,tHeart=0,tCheckpoint=0;
 let reachedCheckpoints = JSON.parse(localStorage.getItem("vril_checkpoints") || "[]");
 let startCheckpoint = 0;
-
-// 👉 Beim Spielstart fragen, ob man vom letzten Checkpoint fortsetzen will
-if (reachedCheckpoints.length) {
-  if (confirm("Willst du vom letzten Checkpoint fortsetzen?")) {
-    startCheckpoint = reachedCheckpoints[reachedCheckpoints.length - 1];
-  } else {
-    localStorage.removeItem("vril_checkpoints");
-    reachedCheckpoints = [];
-  }
-}
-
+if (reachedCheckpoints.length && confirm("Willst du vom letzten Checkpoint fortsetzen?")) startCheckpoint = reachedCheckpoints[reachedCheckpoints.length-1];
 score = startCheckpoint;
 scoreEl.textContent = Math.floor(score);
 
@@ -179,18 +138,10 @@ function spawnHeart(){hearts.push({x:W+20,y:rand(H-220,H-100),w:20,h:18,vx:-3*sp
 function spawnCheckpoint(){checkpoints.push({x:W+20,y:H-120,w:30,h:60,vx:-3*speedMultiplier});}
 
 function reset(fullReset=false){
-  obs=[]; crys=[]; hearts=[]; checkpoints=[];
-  player.y=H-80; player.vy=0; running=true;
-  invincible=false;invTimer=0; speedMultiplier=1;
-  lives=3; livesEl.textContent=lives;
-
-  if(fullReset){ // ← Neustart-Klick
-    score=0;
-    localStorage.removeItem("vril_checkpoints");
-    reachedCheckpoints=[];
-  } else {
-    score=startCheckpoint;
-  }
+  obs=[]; crys=[]; hearts=[]; checkpoints=[]; player.y=H-80; player.vy=0; running=true;
+  invincible=false;invTimer=0; speedMultiplier=1; lives=3; livesEl.textContent=lives;
+  if(fullReset){score=0; localStorage.removeItem("vril_checkpoints"); reachedCheckpoints=[];}
+  else {score=startCheckpoint;}
   scoreEl.textContent=Math.floor(score);
 }
 
@@ -222,65 +173,23 @@ function update(dt){
   if(score>=1000 && Math.random()<0.002 && tHeart<=0){spawnHeart();tHeart=rand(8000,12000);}
 
   checkpointLevels.forEach(level=>{
-    if(score>=level-50 && !reachedCheckpoints.includes(level) && tCheckpoint<=0){
+    if(score>=level && !reachedCheckpoints.includes(level) && tCheckpoint<=0){
       spawnCheckpoint();
-      tCheckpoint=8000;
+      checkpoints[checkpoints.length-1].targetScore = level;
+      tCheckpoint = 10000;
     }
   });
 
-  obs.forEach(o=>o.x+=o.vx*dt/16);
-  crys.forEach(c=>c.x+=c.vx*dt/16);
-  hearts.forEach(h=>h.x+=h.vx*dt/16);
-  checkpoints.forEach(cp=>cp.x+=cp.vx*dt/16);
+  obs.forEach(o=>o.x+=o.vx*dt/16);crys.forEach(c=>c.x+=c.vx*dt/16);hearts.forEach(h=>h.x+=h.vx*dt/16);checkpoints.forEach(cp=>cp.x+=cp.vx*dt/16);
+  obs=obs.filter(o=>o.x+o.w>0);crys=crys.filter(c=>c.x+16>0);hearts=hearts.filter(h=>h.x+16>0);checkpoints=checkpoints.filter(cp=>cp.x+cp.w>0);
 
-  obs=obs.filter(o=>o.x+o.w>0);
-  crys=crys.filter(c=>c.x+16>0);
-  hearts=hearts.filter(h=>h.x+16>0);
-  checkpoints=checkpoints.filter(cp=>cp.x+cp.w>0);
+  obs.forEach(o=>{if(!invincible && rects(player,o)){lives--;beep(220);invincible=true;invTimer=1300;if(lives<=0){running=false;beep(150);}livesEl.textContent=lives;}});
 
-  obs.forEach(o=>{
-    if(!invincible && rects(player,o)){
-      lives--;beep(220);
-      invincible=true;invTimer=1300;
-      if(lives<=0){running=false;beep(150);}
-      livesEl.textContent=lives;
-    }
-  });
+  crys=crys.filter(c=>{if(rects(player,c)){score+=getGemValue(score);scoreEl.textContent=Math.floor(score);beep(660);return false;}return true;});
+  hearts=hearts.filter(h=>{if(rects(player,h)){lives++;livesEl.textContent=lives;beep(880);return false;}return true;});
+  checkpoints=checkpoints.filter(cp=>{if(rects(player,cp)){if(!reachedCheckpoints.includes(cp.targetScore)){reachedCheckpoints.push(cp.targetScore);localStorage.setItem("vril_checkpoints",JSON.stringify(reachedCheckpoints));beep(440);alert("✅ Checkpoint erreicht bei "+cp.targetScore+" Punkten!");}return false;}return true;});
 
-  crys=crys.filter(c=>{
-    if(rects(player,c)){
-      const val=getGemValue(score);
-      score+=val;
-      scoreEl.textContent=Math.floor(score);
-      beep(660);
-      return false;
-    }return true;
-  });
-
-  hearts=hearts.filter(h=>{
-    if(rects(player,h)){
-      lives++;
-      livesEl.textContent=lives;
-      beep(880);
-      return false;
-    }return true;
-  });
-
-  checkpoints=checkpoints.filter(cp=>{
-    if(rects(player,cp)){
-      const nearest = checkpointLevels.find(lvl=>lvl>score-100 && lvl<score+200);
-      if(nearest && !reachedCheckpoints.includes(nearest)){
-        reachedCheckpoints.push(nearest);
-        localStorage.setItem("vril_checkpoints", JSON.stringify(reachedCheckpoints));
-        beep(440);
-        alert("✅ Checkpoint erreicht bei "+nearest+" Punkten!");
-      }
-      return false;
-    }return true;
-  });
-
-  score+=Math.floor(dt*0.01);
-  scoreEl.textContent=Math.floor(score);
+  score+=Math.floor(dt*0.01);scoreEl.textContent=Math.floor(score);
 
   if(score>=271 && score<400) speedMultiplier=1.3;
   else if(score>=400 && score<800) speedMultiplier=1.8;
@@ -293,65 +202,27 @@ function update(dt){
   else if(score>=5000 && score<5500) speedMultiplier=3.0;
   else if(score>=5500 && score<6000) speedMultiplier=4.5;
 
-  if(score>=6000 && running){
-    running=false;
-    localStorage.removeItem("vril_checkpoints");
-    alert("✨ Du hast den Eingang nach Agartha gefunden! ✨");
-  }
+  if(score>=6000 && running){running=false;localStorage.removeItem("vril_checkpoints");alert("✨ Du hast den Eingang nach Agartha gefunden! ✨");}
 }
 
 function draw(){
-  if(bgImage.complete) ctx.drawImage(bgImage,0,0,W,H);
-  else ctx.fillStyle='#041018',ctx.fillRect(0,0,W,H);
+  if(bgImage.complete) ctx.drawImage(bgImage,0,0,W,H); else ctx.fillStyle='#041018',ctx.fillRect(0,0,W,H);
   ctx.fillStyle='#071a1a';ctx.fillRect(0,H-40,W,40);
 
-  crys.forEach(c=>{
-    ctx.fillStyle='#44f';
-    ctx.beginPath();
-    ctx.moveTo(c.x,c.y);
-    ctx.lineTo(c.x+16,c.y+8);
-    ctx.lineTo(c.x,c.y+16);
-    ctx.closePath();
-    ctx.fill();
-  });
-
+  crys.forEach(c=>{ctx.fillStyle='#44f';ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+16,c.y+8);ctx.lineTo(c.x,c.y+16);ctx.closePath();ctx.fill();});
   obs.forEach(o=>{ctx.fillStyle='#666';ctx.fillRect(o.x,o.y,o.w,o.h);});
-
-  hearts.forEach(h=>{
-    ctx.fillStyle='red';
-    ctx.beginPath();
-    ctx.moveTo(h.x+h.w/2,h.y+h.h/2);
-    ctx.bezierCurveTo(h.x+h.w,h.y,h.x+h.w,h.y+h.h/1.5,h.x+h.w/2,h.y+h.h);
-    ctx.bezierCurveTo(h.x,h.y+h.h/1.5,h.x,h.y,h.x+h.w/2,h.y+h.h/2);
-    ctx.fill();
-  });
-
-  checkpoints.forEach(cp=>{
-    if(monsterImg.complete)
-      ctx.drawImage(monsterImg,cp.x,cp.y,cp.w,cp.h);
-    else{
-      ctx.fillStyle='lime';
-      ctx.fillRect(cp.x,cp.y,cp.w,cp.h);
-      ctx.fillStyle='black';
-      ctx.fillText("M",cp.x+8,cp.y+40);
-    }
-  });
+  hearts.forEach(h=>{ctx.fillStyle='red';ctx.beginPath();ctx.moveTo(h.x+h.w/2,h.y+h.h/2);ctx.bezierCurveTo(h.x+h.w,h.y,h.x+h.w,h.y+h.h/1.5,h.x+h.w/2,h.y+h.h);ctx.bezierCurveTo(h.x,h.y+h.h/1.5,h.x,h.y,h.x+h.w/2,h.y+h.h/2);ctx.fill();});
+  checkpoints.forEach(cp=>{if(monsterImg.complete)ctx.drawImage(monsterImg,cp.x,cp.y,cp.w,cp.h);else{ctx.fillStyle='lime';ctx.fillRect(cp.x,cp.y,cp.w,cp.h);ctx.fillStyle='black';ctx.fillText("M",cp.x+8,cp.y+40);}});
 
   player.draw();
 
-  if(!running){
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#fff';
-    ctx.textAlign='center';
-    ctx.fillText(lives>0?'Du hast gewonnen!':'Game Over',W/2,H/2);
-  }
+  if(!running){ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(lives>0?'Du hast gewonnen!':'Game Over',W/2,H/2);}
 }
 
 function loop(now){const dt=now-last;update(dt);draw();last=now;requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 
-restartBtn.onclick=()=>reset(true); // ← Startet komplett von vorne
+restartBtn.onclick=()=>reset(true);
 muteBtn.onclick=()=>muted=!muted;
 document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();player.jump();}});
 canvas.addEventListener('pointerdown',()=>player.jump());

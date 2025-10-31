@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Reise nach Agartha</title>
+<title>Reise nach Agartha — Vril</title>
 <style>
 :root{
   --bg-image: url('assets/argatha.jpg');
-  --accent: rgba(255,255,255,0.85);
+  --accent: rgba(255,255,255,0.95);
   --glass: rgba(255,255,255,0.06);
+  --portal-blue: rgba(60,150,255,0.95);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#app{height:100%}
@@ -29,6 +30,7 @@ body{
   padding: 28px;
   backdrop-filter: blur(6px) saturate(120%);
   box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  position:relative;
 }
 header{display:flex;align-items:center;gap:16px}
 .logo{
@@ -51,18 +53,53 @@ p.lead{color:rgba(255,255,255,0.85);margin-top:6px}
 #vril-section{margin-top:40px;background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px}
 #game{display:block;width:100%;height:460px;border-radius:12px;margin-top:10px;background:#000}
 .hud{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:0.95rem}
-.btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:#fff;padding:4px 8px;cursor:pointer}
+.btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:#fff;padding:6px 10px;cursor:pointer}
+.overlay{
+  position:absolute;left:0;right:0;top:0;bottom:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.55);
+  border-radius:14px;
+  z-index:200;
+  display:none;
+}
+.overlay .panel{
+  background:linear-gradient(180deg, rgba(10,10,20,0.9), rgba(0,0,0,0.75));
+  padding:22px;border-radius:12px;text-align:center;min-width:320px;color:white;
+  box-shadow:0 8px 30px rgba(0,0,0,0.6);
+}
+.win-portal{
+  width:180px;height:180px;border-radius:50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(0,0,0,0));
+  box-shadow: 0 0 30px 8px rgba(60,150,255,0.12), inset 0 0 40px rgba(60,150,255,0.25);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 12px;
+  position:relative;
+  overflow:hidden;
+}
+.win-portal::after{
+  content:'';position:absolute;left:0;right:0;top:0;bottom:0;border-radius:50%;
+  box-shadow:0 0 60px 20px rgba(60,150,255,0.12) inset, 0 0 40px 8px rgba(60,150,255,0.12);
+  transform:scale(1); opacity:0.9;
+  animation:portalPulse 1600ms infinite ease-in-out;
+}
+@keyframes portalPulse{0%{transform:scale(0.95);opacity:.9}50%{transform:scale(1.05);opacity:1}100%{transform:scale(0.95);opacity:.9}}
+.overlay.show{display:flex}
+.small-muted{font-size:0.85rem;color:rgba(255,255,255,0.7);margin-top:8px}
+.score-big{font-size:1.8rem;margin-top:6px}
+.portal-canvas{
+  width:160px;height:160px;border-radius:50%;background:transparent;display:block;
+}
+.hud .score-bubble{background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:8px}
 </style>
 </head>
 <body>
 <audio id="bgmusic" loop>
-  <source src="Hot n Cold - Agartha Remix [_Gb7JtNukNE].mp3" type="audio/mpeg">
+  <source src="assets/Hot_n_Cold_Agartha_Remix.mp3" type="audio/mpeg">
 </audio>
 <script>
 document.addEventListener('click',()=>{const m=document.getElementById('bgmusic');if(m.paused)m.play().catch(()=>{});},{once:true});
 </script>
 
-<div id="app" class="container" role="main">
+<div id="app" class="container" role="main" aria-live="polite">
 <header>
   <div class="logo">☭</div>
   <div>
@@ -70,162 +107,536 @@ document.addEventListener('click',()=>{const m=document.getElementById('bgmusic'
     <p class="lead">Die Reise nach Agartha führte in ein geheimnisvolles Reich, in dem Yakub, Stalin und Dima als mächtige Herrscher über das Schicksal der Welt wachten.</p>
   </div>
 </header>
-<section class="about"><p>Fühl die Vril-Energie.</p></section>
-<section class="gallery">
-  <figure class="photo"><img src="assets/photo1.jpg" alt=""></figure>
-  <figure class="photo"><img src="assets/photo2.jpg" alt=""></figure>
-  <figure class="photo"><img src="assets/photo3.jpg" alt=""></figure>
-</section>
-<section class="videos">
-  <div class="video-card"><iframe src="https://www.youtube.com/embed/z-nG1dCfAww" title="Video 1"></iframe></div>
-  <div class="video-card"><iframe src="https://www.youtube.com/embed/N2aYVtbcZMU" title="Video 2"></iframe></div>
-</section>
 
 <section id="vril-section">
 <h2>🎮 Vril-Energie-Sprung</h2>
-<p>Springe durch Agartha, sammle Kristalle und erreiche 6.000 Punkte!</p>
-<canvas id="game" width="960" height="460"></canvas>
+<p>Springe durch Agartha, sammle Kristalle und erreiche 6.000 Punkte — dann erscheint das Portal nach Agartha.</p>
+<canvas id="game" width="960" height="460" aria-label="Vril Spiel"></canvas>
+
 <div class="hud">
-  <div>Score: <span id="score">0</span></div>
-  <div>Best: <span id="best">0</span></div>
-  <div>Leben: <span id="lives">3</span></div>
+  <div class="score-bubble">Score: <strong id="score">0</strong></div>
+  <div class="score-bubble">Best: <strong id="best">0</strong></div>
+  <div class="score-bubble">Leben: <strong id="lives">3</strong></div>
   <button id="restart" class="btn">Neustart</button>
   <button id="mute" class="btn">Ton an/aus</button>
 </div>
 </section>
+
+<!-- Overlay für Sieg / Portal -->
+<div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="panel" id="overlayPanel">
+    <div id="overlayContent">
+      <!-- Füllt JS -->
+    </div>
+  </div>
 </div>
 
-<a href="#" class="corner-icon"><img src="assets/berserker.png" alt="Eck-Icon"></a>
+</div>
+
+<a href="#" class="corner-icon" aria-hidden="true"><img src="assets/berserker.png" alt="Eck-Icon"></a>
 
 <script>
 (() => {
-const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),livesEl=document.getElementById('lives');
-const restartBtn=document.getElementById('restart'),muteBtn=document.getElementById('mute');
-let W=canvas.width,H=canvas.height,running=true,score=0,muted=false,last=performance.now(),
-    best=+localStorage.getItem('vril_best')||0,lives=3,invincible=false,invTimer=0;
+  // Canvas und HUD
+  const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score'), bestEl = document.getElementById('best'), livesEl = document.getElementById('lives');
+  const restartBtn = document.getElementById('restart'), muteBtn = document.getElementById('mute');
+  const overlay = document.getElementById('overlay'), overlayContent = document.getElementById('overlayContent');
 
-bestEl.textContent=best; 
-livesEl.textContent=lives;
+  // State
+  let W = canvas.width, H = canvas.height;
+  let running = true, score = 0, muted = false, last = performance.now();
+  let best = +localStorage.getItem('vril_best') || 0, lives = 3, invincible = false, invTimer = 0;
+  let speedMultiplier = 1;
 
-const gravity=0.9;
-let speedMultiplier=1;
+  // Spawn timers (ms)
+  let tObs = 0, tCry = 0, tHeart = 0, tCheckpoint = 0;
+  let portal = null, portalSpawned = false;
+  let reachedCheckpoints = JSON.parse(localStorage.getItem("vril_checkpoints") || "[]");
+  let startCheckpoint = 0;
 
-const bgImage = new Image(); bgImage.src = 'assets/Hintergrundbild_1.jpg';
-const monsterImg = new Image(); monsterImg.src = 'assets/monster.png';
-
-const player={
-x:120,y:H-100,w:36,h:44,vy:0,onGround:true,canDouble:true,
-jump(){if(this.onGround){this.vy=-14;this.onGround=false;beep(880);}else if(this.canDouble){this.vy=-12;this.canDouble=false;beep(1100);}},
-update(){this.vy+=gravity; this.y+=this.vy; if(this.y+this.h>H-40){this.y=H-40-this.h; this.vy=0; this.onGround=true; this.canDouble=true;}},
-draw(){const cx=this.x+this.w/2,cy=this.y+10;ctx.strokeStyle='white';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy+10);ctx.lineTo(cx,cy+30);ctx.moveTo(cx,cy+30);ctx.lineTo(cx-8,cy+38);ctx.moveTo(cx,cy+30);ctx.lineTo(cx+8,cy+38);ctx.moveTo(cx,cy+15);ctx.lineTo(cx-8,cy+25);ctx.moveTo(cx,cy+15);ctx.lineTo(cx+8,cy+25);ctx.stroke();ctx.fillStyle='white';ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='blue';ctx.beginPath();ctx.arc(cx-3,cy-1,1.5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+3,cy-1,1.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='gold';ctx.beginPath();ctx.moveTo(cx-5,cy-6);ctx.lineTo(cx+5,cy-6);ctx.stroke();}
-};
-
-function beep(f){if(muted)return;const a=new(AudioContext);const o=a.createOscillator();const g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.value=0.06;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.08);setTimeout(()=>{o.stop();a.close()},120);}
-
-let obs=[],crys=[],hearts=[],checkpoints=[],tObs=0,tCry=0,tHeart=0,tCheckpoint=0;
-let reachedCheckpoints = JSON.parse(localStorage.getItem("vril_checkpoints") || "[]");
-let startCheckpoint = 0;
-if (reachedCheckpoints.length && confirm("Willst du vom letzten Checkpoint fortsetzen?")) startCheckpoint = reachedCheckpoints[reachedCheckpoints.length-1];
-score = startCheckpoint;
-scoreEl.textContent = Math.floor(score);
-
-function rand(a,b){return Math.random()*(b-a)+a;}
-function rects(a,b){return!(a.x+a.w<b.x||a.x>b.x+b.w||a.y+a.h<b.y||a.y>b.y+b.h);}
-function spawnObs(){obs.push({x:W+20,y:H-70,w:rand(20,50),h:rand(30,80),vx:-4*speedMultiplier});}
-function spawnCry(){crys.push({x:W+20,y:rand(H-200,H-80),w:16,h:16,vx:-3*speedMultiplier});}
-function spawnHeart(){hearts.push({x:W+20,y:rand(H-220,H-100),w:20,h:18,vx:-3*speedMultiplier});}
-function spawnCheckpoint(){checkpoints.push({x:W+20,y:H-120,w:30,h:60,vx:-3*speedMultiplier});}
-
-function reset(fullReset=false){
-  obs=[]; crys=[]; hearts=[]; checkpoints=[]; player.y=H-80; player.vy=0; running=true;
-  invincible=false;invTimer=0; speedMultiplier=1; lives=3; livesEl.textContent=lives;
-  if(fullReset){score=0; localStorage.removeItem("vril_checkpoints"); reachedCheckpoints=[];}
-  else {score=startCheckpoint;}
-  scoreEl.textContent=Math.floor(score);
-}
-
-function getGemValue(s){
-  if(s<271) return 10;
-  if(s<400) return 12.5;
-  if(s<800) return 15;
-  if(s<1200) return 17.5;
-  if(s<3000) return 20;
-  if(s<3400) return 20;
-  if(s<3600) return 10;
-  if(s<4000) return 12.5;
-  if(s<5000) return 15;
-  if(s<5500) return 20;
-  if(s<=6000) return 25;
-  return 25;
-}
-
-const checkpointLevels = [400,800,1200,3000,3400,3600,4000,5000,5500];
-
-function update(dt){
-  if(!running)return;
-  player.update();
-  if(invincible){invTimer-=dt;if(invTimer<=0)invincible=false;}
-  tObs-=dt;tCry-=dt;tHeart-=dt;tCheckpoint-=dt;
-
-  if(tObs<=0){spawnObs();tObs=rand(800,1600)/speedMultiplier;}
-  if(tCry<=0){spawnCry();tCry=rand(1000,2200)/speedMultiplier;}
-  if(score>=1000 && Math.random()<0.002 && tHeart<=0){spawnHeart();tHeart=rand(8000,12000);}
-
-  checkpointLevels.forEach(level=>{
-    if(score>=level && !reachedCheckpoints.includes(level) && tCheckpoint<=0){
-      spawnCheckpoint();
-      checkpoints[checkpoints.length-1].targetScore = level;
-      tCheckpoint = 10000;
+  // Offer resume from last checkpoint (use last saved checkpoint score)
+  if (reachedCheckpoints.length) {
+    // last saved checkpoint is the last level reached
+    if (confirm("Willst du vom letzten Checkpoint (" + reachedCheckpoints[reachedCheckpoints.length - 1] + " Punkte) fortsetzen?")) {
+      startCheckpoint = reachedCheckpoints[reachedCheckpoints.length - 1];
     }
-  });
+  }
 
-  obs.forEach(o=>o.x+=o.vx*dt/16);crys.forEach(c=>c.x+=c.vx*dt/16);hearts.forEach(h=>h.x+=h.vx*dt/16);checkpoints.forEach(cp=>cp.x+=cp.vx*dt/16);
-  obs=obs.filter(o=>o.x+o.w>0);crys=crys.filter(c=>c.x+16>0);hearts=hearts.filter(h=>h.x+16>0);checkpoints=checkpoints.filter(cp=>cp.x+cp.w>0);
+  score = startCheckpoint;
+  scoreEl.textContent = Math.floor(score);
+  bestEl.textContent = best;
+  livesEl.textContent = lives;
 
-  obs.forEach(o=>{if(!invincible && rects(player,o)){lives--;beep(220);invincible=true;invTimer=1300;if(lives<=0){running=false;beep(150);}livesEl.textContent=lives;}});
+  // Assets
+  const bgImage = new Image(); bgImage.src = 'assets/Hintergrundbild_1.jpg';
+  const monsterImg = new Image(); monsterImg.src = 'assets/monster.png';
 
-  crys=crys.filter(c=>{if(rects(player,c)){score+=getGemValue(score);scoreEl.textContent=Math.floor(score);beep(660);return false;}return true;});
-  hearts=hearts.filter(h=>{if(rects(player,h)){lives++;livesEl.textContent=lives;beep(880);return false;}return true;});
-  checkpoints=checkpoints.filter(cp=>{if(rects(player,cp)){if(!reachedCheckpoints.includes(cp.targetScore)){reachedCheckpoints.push(cp.targetScore);localStorage.setItem("vril_checkpoints",JSON.stringify(reachedCheckpoints));beep(440);alert("✅ Checkpoint erreicht bei "+cp.targetScore+" Punkten!");}return false;}return true;});
+  // Player
+  const player = {
+    x: 120, y: H - 100, w: 36, h: 44, vy: 0, onGround: true, canDouble: true,
+    jump() {
+      if (!running) return;
+      if (this.onGround) {
+        this.vy = -14; this.onGround = false; beep(880);
+      } else if (this.canDouble) {
+        this.vy = -12; this.canDouble = false; beep(1100);
+      }
+    },
+    update(dt) {
+      this.vy += gravity;
+      this.y += this.vy * dt / 16;
+      if (this.y + this.h > H - 40) {
+        this.y = H - 40 - this.h;
+        this.vy = 0;
+        this.onGround = true;
+        this.canDouble = true;
+      }
+    },
+    draw() {
+      const cx = this.x + this.w / 2, cy = this.y + 10;
+      ctx.strokeStyle = 'white'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + 10); ctx.lineTo(cx, cy + 30);
+      ctx.moveTo(cx, cy + 30); ctx.lineTo(cx - 8, cy + 38);
+      ctx.moveTo(cx, cy + 30); ctx.lineTo(cx + 8, cy + 38);
+      ctx.moveTo(cx, cy + 15); ctx.lineTo(cx - 8, cy + 25);
+      ctx.moveTo(cx, cy + 15); ctx.lineTo(cx + 8, cy + 25);
+      ctx.stroke();
+      ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'blue'; ctx.beginPath(); ctx.arc(cx - 3, cy - 1, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + 3, cy - 1, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'gold'; ctx.beginPath(); ctx.moveTo(cx - 5, cy - 6); ctx.lineTo(cx + 5, cy - 6); ctx.stroke();
+    }
+  };
 
-  score+=Math.floor(dt*0.01);scoreEl.textContent=Math.floor(score);
+  // Sound helper
+  function beep(f) {
+    if (muted) return;
+    try {
+      const a = new (window.AudioContext || window.webkitAudioContext)();
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = 'sine'; o.frequency.value = f; g.gain.value = 0.06;
+      o.connect(g); g.connect(a.destination); o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.08);
+      setTimeout(() => { try { o.stop(); a.close(); } catch (e) {} }, 120);
+    } catch (e) { /* ignore */ }
+  }
 
-  if(score>=271 && score<400) speedMultiplier=1.3;
-  else if(score>=400 && score<800) speedMultiplier=1.8;
-  else if(score>=800 && score<1200) speedMultiplier=2.4;
-  else if(score>=1200 && score<3000) speedMultiplier=3.0;
-  else if(score>=3000 && score<3400) speedMultiplier=1.0;
-  else if(score>=3400 && score<3600) speedMultiplier=0.9;
-  else if(score>=3600 && score<4000) speedMultiplier=1.2;
-  else if(score>=4000 && score<5000) speedMultiplier=2.5;
-  else if(score>=5000 && score<5500) speedMultiplier=3.0;
-  else if(score>=5500 && score<6000) speedMultiplier=4.5;
+  // Utils
+  function rand(a, b) { return Math.random() * (b - a) + a; }
+  function rects(a, b) { return !(a.x + a.w < b.x || a.x > b.x + b.w || a.y + a.h < b.y || a.y > b.y + b.h); }
 
-  if(score>=6000 && running){running=false;localStorage.removeItem("vril_checkpoints");alert("✨ Du hast den Eingang nach Agartha gefunden! ✨");}
-}
+  // Entities
+  let obs = [], crys = [], hearts = [], checkpoints = [];
 
-function draw(){
-  if(bgImage.complete) ctx.drawImage(bgImage,0,0,W,H); else ctx.fillStyle='#041018',ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#071a1a';ctx.fillRect(0,H-40,W,40);
+  // Checkpoint levels (scores at which checkpoints become available)
+  const checkpointLevels = [400, 800, 1200, 3000, 3400, 3600, 4000, 5000, 5500];
 
-  crys.forEach(c=>{ctx.fillStyle='#44f';ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+16,c.y+8);ctx.lineTo(c.x,c.y+16);ctx.closePath();ctx.fill();});
-  obs.forEach(o=>{ctx.fillStyle='#666';ctx.fillRect(o.x,o.y,o.w,o.h);});
-  hearts.forEach(h=>{ctx.fillStyle='red';ctx.beginPath();ctx.moveTo(h.x+h.w/2,h.y+h.h/2);ctx.bezierCurveTo(h.x+h.w,h.y,h.x+h.w,h.y+h.h/1.5,h.x+h.w/2,h.y+h.h);ctx.bezierCurveTo(h.x,h.y+h.h/1.5,h.x,h.y,h.x+h.w/2,h.y+h.h/2);ctx.fill();});
-  checkpoints.forEach(cp=>{if(monsterImg.complete)ctx.drawImage(monsterImg,cp.x,cp.y,cp.w,cp.h);else{ctx.fillStyle='lime';ctx.fillRect(cp.x,cp.y,cp.w,cp.h);ctx.fillStyle='black';ctx.fillText("M",cp.x+8,cp.y+40);}});
+  // Timers initial randomization
+  tObs = rand(400, 1200);
+  tCry = rand(600, 1500);
+  tHeart = 99999; // locked until high score
+  tCheckpoint = 0;
 
-  player.draw();
+  const gravity = 0.9;
 
-  if(!running){ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(lives>0?'Du hast gewonnen!':'Game Over',W/2,H/2);}
-}
+  // Spawners (all velocities are scaled by speedMultiplier)
+  function spawnObs() { obs.push({ x: W + 40, y: H - 40 - rand(30, 100), w: rand(24, 60), h: rand(20, 80), vx: -4 * speedMultiplier }); }
+  function spawnCry() { crys.push({ x: W + 30, y: rand(H - 220, H - 80), w: 16, h: 16, vx: -3 * speedMultiplier }); }
+  function spawnHeart() { hearts.push({ x: W + 30, y: rand(H - 220, H - 100), w: 20, h: 18, vx: -3 * speedMultiplier }); }
+  function spawnCheckpoint(level) {
+    // Place checkpoint a bit above ground; store level target
+    const cp = { x: W + 40, y: H - 120, w: 36, h: 56, vx: -3 * speedMultiplier, targetScore: level, collected: false, pulse: Math.random() * Math.PI * 2 };
+    checkpoints.push(cp);
+  }
+  function spawnPortal() {
+    // Portal appears from the right and moves left slowly; player must touch it to win
+    portal = { x: W + 120, y: H - 140, w: 84, h: 84, vx: -2 * speedMultiplier, active: true, t: 0 };
+    portalSpawned = true;
+  }
 
-function loop(now){const dt=now-last;update(dt);draw();last=now;requestAnimationFrame(loop);}
-requestAnimationFrame(loop);
+  // Reset function
+  function reset(fullReset = false) {
+    obs = []; crys = []; hearts = []; checkpoints = []; portal = null; portalSpawned = false;
+    player.y = H - 80; player.vy = 0; running = true; invincible = false; invTimer = 0; speedMultiplier = 1;
+    lives = 3; livesEl.textContent = lives;
+    if (fullReset) {
+      score = 0; localStorage.removeItem("vril_checkpoints"); reachedCheckpoints = [];
+    } else {
+      // resume from last checkpoint if any
+      score = startCheckpoint || 0;
+    }
+    scoreEl.textContent = Math.floor(score);
+    tObs = rand(400, 1200); tCry = rand(600, 1500); tHeart = 99999; tCheckpoint = 0;
+    hideOverlay();
+  }
 
-restartBtn.onclick=()=>reset(true);
-muteBtn.onclick=()=>muted=!muted;
-document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();player.jump();}});
-canvas.addEventListener('pointerdown',()=>player.jump());
+  // Score -> gem value mapping (kept but cleaned)
+  function getGemValue(s) {
+    if (s < 271) return 10;
+    if (s < 400) return 12.5;
+    if (s < 800) return 15;
+    if (s < 1200) return 17.5;
+    if (s < 3000) return 20;
+    if (s < 3400) return 20;
+    if (s < 3600) return 10;
+    if (s < 4000) return 12.5;
+    if (s < 5000) return 15;
+    if (s < 5500) return 20;
+    if (s <= 6000) return 25;
+    return 25;
+  }
+
+  // Update loop
+  function update(dt) {
+    if (!running) return;
+
+    player.update(dt);
+
+    if (invincible) { invTimer -= dt; if (invTimer <= 0) invincible = false; }
+
+    // timers
+    tObs -= dt; tCry -= dt; tHeart -= dt; tCheckpoint -= dt;
+
+    // spawns
+    if (tObs <= 0) { spawnObs(); tObs = rand(700, 1600) / Math.max(0.6, speedMultiplier); }
+    if (tCry <= 0) { spawnCry(); tCry = rand(900, 2200) / Math.max(0.6, speedMultiplier); }
+    if (score >= 1000 && Math.random() < 0.0015 && tHeart <= 0) { spawnHeart(); tHeart = rand(8000, 12000); }
+
+    // spawn checkpoints for levels not yet reached
+    checkpointLevels.forEach(level => {
+      if (score >= level && !reachedCheckpoints.includes(level) && tCheckpoint <= 0) {
+        spawnCheckpoint(level);
+        tCheckpoint = 8000; // cooldown until another checkpoint may spawn
+      }
+    });
+
+    // move entities (dt uses ms; consistent scaling)
+    obs.forEach(o => o.x += o.vx * dt / 16);
+    crys.forEach(c => c.x += c.vx * dt / 16);
+    hearts.forEach(h => h.x += h.vx * dt / 16);
+    checkpoints.forEach(cp => { cp.x += cp.vx * dt / 16; cp.pulse += dt / 300; });
+
+    // filter out-of-screen
+    obs = obs.filter(o => o.x + o.w > -50);
+    crys = crys.filter(c => c.x + c.w > -50);
+    hearts = hearts.filter(h => h.x + h.w > -50);
+    checkpoints = checkpoints.filter(cp => cp.x + cp.w > -50 && !cp.collected);
+
+    // collisions: obstacles
+    obs.forEach(o => {
+      if (!invincible && rects(player, o)) {
+        lives--; beep(220);
+        invincible = true; invTimer = 1300;
+        if (lives <= 0) { running = false; showGameOver(); }
+        livesEl.textContent = lives;
+      }
+    });
+
+    // collisions: crystals
+    crys = crys.filter(c => {
+      if (rects(player, c)) {
+        score += getGemValue(score);
+        scoreEl.textContent = Math.floor(score);
+        beep(660);
+        return false;
+      }
+      return true;
+    });
+
+    // collisions: hearts
+    hearts = hearts.filter(h => {
+      if (rects(player, h)) {
+        lives++; livesEl.textContent = lives; beep(880);
+        return false;
+      }
+      return true;
+    });
+
+    // collisions: checkpoints
+    checkpoints = checkpoints.filter(cp => {
+      if (rects(player, cp)) {
+        // mark collected, award and persist
+        if (!reachedCheckpoints.includes(cp.targetScore)) {
+          reachedCheckpoints.push(cp.targetScore);
+          localStorage.setItem("vril_checkpoints", JSON.stringify(reachedCheckpoints));
+          cp.collected = true;
+          beep(440);
+          // non-blocking notification instead of alert
+          flashMessage("✅ Checkpoint erreicht bei " + cp.targetScore + " Punkten!");
+        }
+        return false;
+      }
+      return true;
+    });
+
+    // Increase base score over time
+    score += Math.floor(dt * 0.01);
+    scoreEl.textContent = Math.floor(score);
+
+    // speed scaling (kept similar to original but clearer)
+    if (score >= 5500 && score < 6000) speedMultiplier = 4.5;
+    else if (score >= 5000 && score < 5500) speedMultiplier = 3.0;
+    else if (score >= 4000 && score < 5000) speedMultiplier = 2.5;
+    else if (score >= 3600 && score < 4000) speedMultiplier = 1.2;
+    else if (score >= 3400 && score < 3600) speedMultiplier = 0.9;
+    else if (score >= 3000 && score < 3400) speedMultiplier = 1.0;
+    else if (score >= 1200 && score < 3000) speedMultiplier = 3.0;
+    else if (score >= 800 && score < 1200) speedMultiplier = 2.4;
+    else if (score >= 400 && score < 800) speedMultiplier = 1.8;
+    else if (score >= 271 && score < 400) speedMultiplier = 1.3;
+    else speedMultiplier = 1.0;
+
+    // update existing entity velocities to reflect new multiplier (so newly spawned will follow)
+    obs.forEach(o => o.vx = -4 * speedMultiplier);
+    crys.forEach(c => c.vx = -3 * speedMultiplier);
+    hearts.forEach(h => h.vx = -3 * speedMultiplier);
+    checkpoints.forEach(cp => cp.vx = -3 * speedMultiplier);
+
+    // If enough score reached, spawn portal (only once)
+    if (score >= 6000 && !portalSpawned) {
+      spawnPortal();
+      flashMessage("✨ Ein blaues Portal erscheint am Horizont... ✨");
+    }
+
+    // portal movement & collision -> win
+    if (portal && portal.active) {
+      portal.x += portal.vx * dt / 16;
+      portal.t += dt;
+      // portal pulsing is handled in draw
+      if (rects(player, portal)) {
+        // Player reached portal -> Win
+        portal.active = false;
+        running = false;
+        // update best
+        if (Math.floor(score) > best) {
+          best = Math.floor(score);
+          localStorage.setItem('vril_best', best);
+        }
+        showWinScreen();
+      }
+      // remove if off-screen left (safety)
+      if (portal.x + portal.w < -50) portal.active = false;
+    }
+  }
+
+  // Draw loop
+  function draw() {
+    // background
+    if (bgImage.complete) ctx.drawImage(bgImage, 0, 0, W, H);
+    else { ctx.fillStyle = '#041018'; ctx.fillRect(0, 0, W, H); }
+
+    // ground
+    ctx.fillStyle = '#071a1a'; ctx.fillRect(0, H - 40, W, 40);
+
+    // crystals
+    crys.forEach(c => {
+      ctx.fillStyle = '#44f';
+      ctx.beginPath();
+      ctx.moveTo(c.x + 8, c.y);
+      ctx.lineTo(c.x + 16, c.y + 8);
+      ctx.lineTo(c.x + 8, c.y + 16);
+      ctx.lineTo(c.x, c.y + 8);
+      ctx.closePath(); ctx.fill();
+    });
+
+    // obstacles
+    obs.forEach(o => {
+      ctx.fillStyle = '#666';
+      ctx.fillRect(o.x, o.y, o.w, o.h);
+    });
+
+    // hearts
+    hearts.forEach(h => {
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.moveTo(h.x + h.w / 2, h.y + h.h / 2);
+      ctx.bezierCurveTo(h.x + h.w, h.y, h.x + h.w, h.y + h.h / 1.5, h.x + h.w / 2, h.y + h.h);
+      ctx.bezierCurveTo(h.x, h.y + h.h / 1.5, h.x, h.y, h.x + h.w / 2, h.y + h.h / 2);
+      ctx.fill();
+    });
+
+    // checkpoints: draw as glowing crystal/flag with pulsing scale
+    checkpoints.forEach(cp => {
+      const pulse = 1 + 0.08 * Math.sin(cp.pulse);
+      const w = cp.w * pulse, h = cp.h * pulse;
+      ctx.save();
+      ctx.translate(cp.x + cp.w / 2, cp.y + cp.h / 2);
+      // glow
+      ctx.fillStyle = 'rgba(120,200,255,0.12)';
+      ctx.beginPath();
+      ctx.ellipse(0, 4, w * 0.9, h * 0.6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // crystal
+      ctx.fillStyle = 'rgba(80,180,255,0.95)';
+      ctx.beginPath();
+      ctx.moveTo(-w / 6, -h / 2);
+      ctx.lineTo(w / 6, -h / 2);
+      ctx.lineTo(w / 2, 0);
+      ctx.lineTo(w / 6, h / 2);
+      ctx.lineTo(-w / 6, h / 2);
+      ctx.lineTo(-w / 2, 0);
+      ctx.closePath();
+      ctx.fill();
+      // small label
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = '10px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText(cp.targetScore, 0, h / 1.6);
+      ctx.restore();
+    });
+
+    // portal (if present): draw blue swirling portal
+    if (portal && portal.active) {
+      const p = portal, cx = p.x + p.w / 2, cy = p.y + p.h / 2;
+      // outer glow
+      ctx.save();
+      const grad = ctx.createRadialGradient(cx, cy, 6, cx, cy, Math.max(p.w, p.h));
+      grad.addColorStop(0, 'rgba(140,200,255,0.95)');
+      grad.addColorStop(0.4, 'rgba(60,150,255,0.45)');
+      grad.addColorStop(1, 'rgba(10,20,40,0.05)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, p.w, p.h, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // inner swirl rings
+      for (let i = 0; i < 4; i++) {
+        const r = (p.w / 2) * (0.6 - i * 0.12);
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(160,210,255,${0.5 - i * 0.09})`;
+        ctx.lineWidth = 3 - i * 0.6;
+        ctx.setLineDash([6 - i * 1.2, 8 + i * 2]);
+        ctx.lineDashOffset = -portal.t / (20 + i * 6);
+        ctx.ellipse(cx, cy, r, r, portal.t / 1100 + i, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    // player
+    player.draw();
+
+    // game over overlay message drawing handled by DOM overlay - but draw a paused overlay text
+    if (!running && !portalSpawned && !(portal && portal.active)) {
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.font = '22px system-ui';
+      ctx.fillText(lives > 0 ? 'Spiel pausiert' : 'Game Over', W / 2, H / 2);
+    }
+  }
+
+  // request frame loop
+  function loop(now) {
+    const dt = now - last;
+    update(dt);
+    draw();
+    last = now;
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // UI controls
+  restartBtn.onclick = () => reset(true);
+  muteBtn.onclick = () => {
+    muted = !muted;
+    document.getElementById('bgmusic').muted = muted;
+    muteBtn.textContent = muted ? 'Ton an' : 'Ton aus';
+  };
+
+  // Input
+  document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); player.jump(); } });
+  canvas.addEventListener('pointerdown', () => player.jump());
+
+  // Overlay helpers
+  let overlayTimeout = null;
+  function showOverlay(html) {
+    overlayContent.innerHTML = html;
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+  function hideOverlay() {
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlayContent.innerHTML = '';
+    if (overlayTimeout) { clearTimeout(overlayTimeout); overlayTimeout = null; }
+  }
+
+  // Non-blocking flash message (small overlay)
+  function flashMessage(msg, ms = 2400) {
+    const old = document.querySelector('.container .temp-flash');
+    if (old) old.remove();
+    const div = document.createElement('div');
+    div.className = 'temp-flash';
+    div.style.cssText = 'position:absolute;left:50%;transform:translateX(-50%);top:18px;padding:8px 14px;background:rgba(0,0,0,0.6);border-radius:10px;color:white;z-index:500;font-size:0.95rem;box-shadow:0 8px 22px rgba(0,0,0,0.6)';
+    div.textContent = msg;
+    document.querySelector('.container').appendChild(div);
+    setTimeout(() => div.remove(), ms);
+  }
+
+  // Win / GameOver display functions
+  function showWinScreen() {
+    // Compose win panel, show portal graphic and score, button to restart
+    const html = `
+      <div class="win-portal" role="img" aria-label="Blaues Portal">
+        <!-- decorative portal; could be an inline canvas -->
+      </div>
+      <h2>✨ Du hast Agartha erreicht! ✨</h2>
+      <div class="score-big">Punkte: ${Math.floor(score)}</div>
+      <div class="small-muted">Best: ${best}</div>
+      <div style="margin-top:12px">
+        <button id="overlayRestart" class="btn">Nochmal starten</button>
+        <button id="overlayClose" class="btn" style="margin-left:8px">Schließen</button>
+      </div>
+    `;
+    showOverlay(html);
+    // set best in UI and localStorage
+    if (Math.floor(score) > best) {
+      best = Math.floor(score);
+      localStorage.setItem('vril_best', best);
+    }
+    bestEl.textContent = best;
+    // Hook buttons
+    document.getElementById('overlayRestart').addEventListener('click', () => { reset(true); });
+    document.getElementById('overlayClose').addEventListener('click', () => { hideOverlay(); });
+  }
+
+  function showGameOver() {
+    // show a simple overlay game over with score + restart
+    const html = `
+      <h2>Game Over</h2>
+      <div class="score-big">Punkte: ${Math.floor(score)}</div>
+      <div class="small-muted">Best: ${best}</div>
+      <div style="margin-top:12px">
+        <button id="overlayRestart2" class="btn">Nochmal starten</button>
+        <button id="overlayClose2" class="btn" style="margin-left:8px">Schließen</button>
+      </div>
+    `;
+    // update best if necessary
+    if (Math.floor(score) > best) {
+      best = Math.floor(score);
+      localStorage.setItem('vril_best', best);
+    }
+    bestEl.textContent = best;
+    showOverlay(html);
+    document.getElementById('overlayRestart2').addEventListener('click', () => { reset(true); });
+    document.getElementById('overlayClose2').addEventListener('click', () => { hideOverlay(); });
+  }
+
+  // When window resized, adjust canvas scale (keeps internal resolution)
+  function adaptCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    // Keep the canvas internal resolution fixed, but scale via CSS for responsiveness
+    // Update W/H used for gameplay physics if container size changed significantly
+    // (we keep internal game size to avoid physics change)
+    // If you want physics to adapt, we can update W and H here to rect.width/height and scale everything.
+  }
+  window.addEventListener('resize', adaptCanvas);
+
+  // Init done
 })();
 </script>
 </body>

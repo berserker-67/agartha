@@ -98,7 +98,6 @@ document.addEventListener('click',()=>{const m=document.getElementById('bgmusic'
 </div>
 
 <a href="#" class="corner-icon"><img src="assets/berserker.png" alt="Eck-Icon"></a>
-
 <script>
 (() => {
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
@@ -114,8 +113,21 @@ bgImage.src = 'assets/Hintergrundbild_1.jpg';
 
 const player={
 x:120,y:H-100,w:36,h:44,vy:0,onGround:true,canDouble:true,
-jump(){if(this.onGround){this.vy=-14;this.onGround=false;beep(880);}else if(this.canDouble){this.vy=-12;this.canDouble=false;beep(1100);}} ,
-update(){this.vy+=gravity;this.y+=this.vy;if(this.y+this.h>H-40){this.y=H-40-this.h;this.vy=0;this.onGround=true;this.canDouble=true;}} ,
+jump(){
+  if(this.onGround){
+    this.vy=-14;this.onGround=false;beep(880);
+  }else if(this.canDouble){
+    this.vy=-12;this.canDouble=false;beep(1100);
+  }
+},
+update(){
+  this.vy+=gravity;
+  this.y+=this.vy;
+  if(this.y+this.h>H-40){
+    this.y=H-40-this.h;
+    this.vy=0;this.onGround=true;this.canDouble=true;
+  }
+},
 draw(){
   const cx=this.x+this.w/2,cy=this.y+10;
   ctx.strokeStyle='white';ctx.lineWidth=2;
@@ -144,6 +156,21 @@ function spawnCry(){crys.push({x:W+20,y:rand(H-200,H-80),w:16,h:16,vx:-3*speedMu
 function spawnHeart(){hearts.push({x:W+20,y:rand(H-220,H-100),w:20,h:18,vx:-3*speedMultiplier});}
 function reset(){score=0;obs=[];crys=[];hearts=[];player.y=H-80;player.vy=0;running=true;lives=3;invincible=false;invTimer=0;speedMultiplier=1;scoreEl.textContent=score;livesEl.textContent=lives;}
 
+function getGemValue(s){
+  if(s<271) return 10;
+  if(s<400) return 12.5;
+  if(s<800) return 15;
+  if(s<1200) return 17.5;
+  if(s<3000) return 20;
+  if(s<3400) return 20;
+  if(s<3600) return 10;
+  if(s<4000) return 12.5;
+  if(s<5000) return 15;
+  if(s<5500) return 20;
+  if(s<=6000) return 25;
+  return 25;
+}
+
 function update(dt){
   if(!running)return;
   player.update();
@@ -153,8 +180,8 @@ function update(dt){
   if(tObs<=0){spawnObs();tObs=rand(800,1600)/speedMultiplier;}
   if(tCry<=0){spawnCry();tCry=rand(1000,2200)/speedMultiplier;}
 
-  // Ab 4000 Punkte: Herzen spawnen etwa alle 200 Punkte zufällig
-  if(score>=4000 && Math.random()<0.002 && tHeart<=0){
+  // Ab 1000 Punkte: Herzen spawnen etwa alle 200 Punkte zufällig
+  if(score>=1000 && Math.random()<0.002 && tHeart<=0){
     spawnHeart();
     tHeart=rand(8000,12000);
   }
@@ -177,8 +204,9 @@ function update(dt){
 
   crys=crys.filter(c=>{
     if(rects(player,c)){
-      score+=10;
-      scoreEl.textContent=score;
+      const val=getGemValue(score);
+      score+=val;
+      scoreEl.textContent=Math.floor(score);
       beep(660);
       return false;
     }return true;
@@ -194,7 +222,7 @@ function update(dt){
   });
 
   score+=Math.floor(dt*0.01);
-  scoreEl.textContent=score;
+  scoreEl.textContent=Math.floor(score);
 
   // Neue Geschwindigkeitsstufen
   if(score>=271 && score<400) speedMultiplier=1.3;
